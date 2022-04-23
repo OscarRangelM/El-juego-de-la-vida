@@ -9,64 +9,54 @@ import random #modulo random para poder tener la generación inicial del juego d
 from collections import defaultdict # Nos permite crear nuestras porpias "Bibliotecas" la vamos a usar para guardar las condiciones de la celda y hacer las comparaciones
 
 #función del juego
-def juego():
+def juego(): # Función que genera el juego cuando se manda a llamar
 
-    gen=int(input("¿Cuantas generaciones quiere ver?"))
-    muerta = str('.')
-    viva = str('x')    
-    tabla = 25,25
-    celda = defaultdict(int, {
+    gen=int(input("¿Cuantas generaciones quiere ver?")) # Capturamos las generaciones a generar
+    muerta = str('  ') # Como se va a ver una celula muerta
+    viva = str('O ')  # Como se va a ver una celula viva  
+    tabla = 15,15 #el tamaño de la tabla
+    celda = defaultdict(int, { #funcion para definir las condiciones de la vida de las celulas
     (1, 2): 1, # si tiene dos vecinas vivas, esta vive
     (1, 3): 1, # si tiene tres vecinas vivas, esta vive
     (0, 3): 1, # si tiene tres vecinas vivas, revive
     } ) # Condiciones para que viva
     
-    ##
-    ## Start States
-    ##
-    # blinker
-    u = universe = defaultdict(int)
-    u[(1,0)], u[(1,1)], u[(1,2)] = 1,1,1
-    
-    ## toad
-    u = universe = defaultdict(int)
-    u[(5,5)], u[(5,6)], u[(5,7)] = 1,1,1
-    u[(6,6)], u[(6,7)], u[(6,8)] = 1,1,1
-    
-    ## glider
-    u = universe = defaultdict(int)
+    # Estados de comparació
+    vartab = tabglobal = defaultdict(int) # Creamos un diccionario donde se indican los valores prederminados de las celdas vecinas
     gen
-    u[(5,5)], u[(5,6)], u[(5,7)] = 1,1,1
-    u[(6,5)] = 1
-    u[(7,6)] = 1
+    vartab[(1,0)], vartab[(1,1)], vartab[(1,2)] = 1,1,1 #Estos valores predeterminados nos van a proporcionar los patrones principales como lo son el de la estrella (barra horizontal-vertical)
+    vartab[(5,5)], vartab[(5,6)], vartab[(5,7)] = 1,1,1
+    vartab[(6,6)], vartab[(6,7)], vartab[(6,8)] = 1,1,1
+    vartab[(5,5)], vartab[(5,6)], vartab[(5,7)] = 1,1,1
+    vartab[(6,5)] = 1
+    vartab[(7,6)] = 1
     
-    ## random start
-    universe = defaultdict(int, 
-                        # array of random start values
-                        ( ((row, col), random.choice((0,1)))
-                            for col in range(tabla[0])
-                            for row in range(tabla[1])
+    tabglobal = defaultdict(int, # arreglo para la generación aleatoria de la generación 0
+                        ( ((fila, columna), random.choice((0,1))) 
+                            for columna in range(tabla[0])
+                            for fila in range(tabla[1])
                         ) )  # returns 0 for out of bounds
     
     for i in range(gen):
-        time_duration = 1.5
-        time.sleep(time_duration)
-        print("\nGeneración %3i:" % ( i+1, ))
-        for row in range(tabla[1]):
-            print("  ", ''.join(str(universe[(row,col)])
-                                for col in range(tabla[0])).replace(
+        time_duration = 0.5 # guardamos el tiempo que va haber entre generación y generación en una variable
+        time.sleep(time_duration) # Usamos la funcion tiem.sleep de la biblioteca time para darle un tiempo entre generaciones
+        print("\nGeneración %3i:" % ( i+1, )) # Imprimimos el número de generación para guiarnos de mejor manera
+        for fila in range(tabla[1]): # En python el for se usa para hacer recorridos, en este caso vamos a recorrer los elementos de tabla 
+            print("  ", ''.join(str(tabglobal[(fila,columna)]) 
+                                for columna in range(tabla[0])).replace( # Remplazamos el valor de las celulas que mueren o que viven haciendo un recorrio con for
                                     '0', muerta).replace('1', viva))
-        nextgeneration = defaultdict(int)
-        for row in range(tabla[1]):
-            for col in range(tabla[0]):
-                nextgeneration[(row,col)] = celda[
-                    ( universe[(row,col)],
-                    -universe[(row,col)] + sum(universe[(r,c)]
-                                                for r in range(row-1,row+2)
-                                                for c in range(col-1, col+2) )
+        siguiente_gen = defaultdict(int) #
+        for fila in range(tabla[1]): #recorrido de las filas
+            for columna in range(tabla[0]): # recorrido de columna por columna
+                siguiente_gen[(fila,columna)] = celda[ # En el arreglo siguiente_gen ingresamos los datos de filas por columnas uno por uno y es donde se realizan las comparaciones de los valores predeterminados en el diccionario tabglobal
+                    ( tabglobal[(fila,columna)],
+                    -tabglobal[(fila,columna)] + sum(tabglobal[(f,c)]
+                                                for f in range(fila-1,fila+2)
+                                                for c in range(columna-1, columna+2) )
                     ) ]
-        universe = nextgeneration
+        tabglobal = siguiente_gen #ahora remplazamos los valores de la primer tabla por los nuevos valores ya remplazados con los diccionarios de la anterior 
 
+    # Mini menú para continuar, terminar el juego o volver al inicio
     opc2 = int(input("\n\n¿Quiere volver a jugar? (1)\n¿Quiere terminar el juego? (2)\n¿Menú? (Cualquier otro número)\n"))
     if opc2 ==1: # Si la opción es 1 el juego se inicia
         print("Aquí va el juego o.O")
@@ -97,12 +87,13 @@ def menu_principal():
     opc=int(input("\t\tOpción:")) # Declaramos la función opc para escoger una opción del menú
     if opc ==1: # Si la opción es 1 el juego se inicia
         print("Aquí va el juego o.O")
-        juego()
+        juego() # Llamamos al juego
     elif opc ==2: # Si la opción es 2 el juego se finaliza
         print("\n\n\n----------------->°°°°°\t Adios\t°°°°°<-----------------\n\n\n")
-        SystemExit
+        SystemExit # Terminamos el programa 
     else:
-        time_duration = 1.5        
+        time_duration = 0.5
+        time.sleep(time_duration)      
         menu_principal()
 
 menu_principal()
